@@ -1,9 +1,14 @@
         window.addEventListener('DOMContentLoaded', () => {
             const userData = JSON.parse(localStorage.getItem('data'));
-            if (userData && userData.name) {
-                document.getElementById('userName').textContent = userData.name;
+
+            if (!userData) {
+                window.location.href = '/'; 
+                return;
             }
-            
+
+            // Usuário autenticado
+            document.getElementById('userName').textContent = userData.name;
+
             initializeMap();
         });
         

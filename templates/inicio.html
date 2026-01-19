@@ -34,10 +34,6 @@
             <span class="stat-value" id="activeDevices">0 (0%)</span>
         </div>
         <div class="stat-card">
-            <span class="stat-title">Dispositivos Inativos</span>
-            <span class="stat-value" id="inactiveDevices">0 (0%)</span>
-        </div>
-        <div class="stat-card">
             <span class="stat-title">Média de Umidade</span>
             <span class="stat-value" id="avgHumidity">0%</span>
         </div>
@@ -93,10 +89,15 @@
             <div class="form-group">
                 <label for="equipmentType">Selecionar Equipamento</label>
                 <select id="equipmentType" required>
-                    <option value="">Selecione...</option>
-                    <option value="mpu6050">MPU6050</option>
-                    <option value="dht22">DHT22</option>
-                    <option value="bme280">BME280</option>
+                    <option value="">Selecione o equipamento</option>
+                    <option value="motor_eletrico">Motor Elétrico</option>
+                    <option value="bomba_centrifuga">Bomba Centrífuga</option>
+                    <option value="conjunto_motobomba">Conjunto Moto-Bomba</option>
+                    <option value="bomba_submersa">Bomba Submersa</option>
+                    <option value="bomba_dosadora">Bomba Dosadora</option>
+                    <option value="redutor">Redutor / Caixa de Engrenagem</option>
+                    <option value="acoplamento">Acoplamento</option>
+                    <option value="agitador">Agitador de Tanque</option>
                 </select>
             </div>
 
@@ -122,39 +123,13 @@
     </div>
 </div>
 
-<script>
-    function openSensorModal() {
-    document.getElementById('sensorModal').style.display = 'flex';
-}
 
-function closeSensorModal() {
-    document.getElementById('sensorModal').style.display = 'none';
-}
 
-// Envio do formulário
-document.getElementById('sensorForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const sensorData = {
-        id_dispositivo: document.getElementById('deviceId').value,
-        latitude: document.getElementById('latitude').value,
-        longitude: document.getElementById('longitude').value,
-        equipamento_tipo: document.getElementById('equipmentType').value,
-        equipamento_nome: document.getElementById('equipmentName').value,
-        host: document.getElementById('host').value
-    };
-
-    console.log('Novo sensor:', sensorData);
-
-    // Aqui você pode:
-    // fetch('/api/sensors', { method: 'POST', body: JSON.stringify(sensorData) })
-
-    closeSensorModal();
-});
-</script>
 
 
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.js'></script>
     <script src="../static/js/inicio.js"></script>
+    <script src="../static/js/sensor.js"></script>
+    <script src="../static/js/geo.js"></script>
 </body>
 </html>

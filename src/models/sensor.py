@@ -11,15 +11,17 @@ class Sensor(Base):
     id_sensor = Column(Integer, primary_key=True)
     sensor_name = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("hydrian.users.id"), nullable=False)
-    name = Column(String, nullable=False)
     equip = Column(String, nullable=False)
     location = Column(String, nullable=False)
     host = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-
-
-
+class SensorCreate(BaseModel):
+    sensor_name: str
+    latitude: float
+    longitude: float
+    equip: str
+    host: str
     
 class SensorDataIn(BaseModel):
     device_id: str
