@@ -56,12 +56,12 @@ A arquitetura do Hydrian é dividida em **4 camadas principais**:
 ### Comunicação
 
 * Protocolo: **I2C**
-* Pinos comuns:
+* Pino:
 
-  * SDA
-  * SCL
-  * VCC
-  * GND
+  * SDA - 21
+  * SCL - 22
+  * VCC - 3.3v
+  * GND - GND
 
 O ESP32 realiza:
 
