@@ -2,7 +2,7 @@
 
 # Monitoramento de Vibração para Motores de Irrigação
 
-<img src="static/img/projeto.png" alt="Sensor MPU6050 com ESP32" width="200">
+<img src="static/img/projeto.png" alt="Sensor MPU6050 com ESP32" width="750">
 
 O **Hydrian** é uma plataforma IoT voltada ao **monitoramento de vibração e funcionamento de motores de irrigação**, permitindo a detecção precoce de falhas mecânicas, desalinhamentos e desgaste de componentes.
 
