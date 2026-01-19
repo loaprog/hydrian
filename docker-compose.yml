@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: vibration_api
+    ports:
+      - "8010:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: vibration_collector
+    environment:
+      API_URL: http://api:8000/sensors/data
+      SENSOR_IP: http://192.168.1.100/data
+    depends_on:
+      - api
+      - db
+
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: vibration_db
+    environment:
+      POSTGRES_USER: hydrian_user
+      POSTGRES_PASSWORD: hydrian_pass
+      POSTGRES_DB: hydrian_db
+    ports:
+      - "5432:5432"
+volumes:
+  postgres_data:

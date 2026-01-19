@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Hydrian</title>
+    <link rel="icon" href="../static/img/favicon.png" type="image/png">
+    <link rel="stylesheet" href="../static/css/inicio.css">
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.css' rel='stylesheet' />
+    
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="../static/img/hydrian_branco.png" alt="Hydrian" class="logo">
+        </div>
+        
+        <div class="user-info">
+            <span class="user-name" id="userName">Usuário</span>
+            <button class="logout-btn" id="logoutBtn">Sair</button>
+        </div>
+    </header>        
+    <main class="main-content">
+        <div class="dashboard-grid">
+            <div class="map-panel">
+                <section class="map-container">
+<div class="map-header">
+    <h3 class="map-title">Mapa de Dispositivos</h3>
+    <p class="map-subtitle">Clique nos marcadores para ver detalhes dos sensores</p>
+
+    <div class="map-stats" id="mapStats">
+        <div class="stat-card">
+            <span class="stat-title">Dispositivos Ativos</span>
+            <span class="stat-value" id="activeDevices">0 (0%)</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-title">Dispositivos Inativos</span>
+            <span class="stat-value" id="inactiveDevices">0 (0%)</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-title">Média de Umidade</span>
+            <span class="stat-value" id="avgHumidity">0%</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-title">Última Atualização</span>
+            <span class="stat-value" id="lastUpdate">--</span>
+        </div>
+    </div>
+</div>
+
+            <div id="map"></div>
+        </section>
+    </main>
+
+
+<!-- Botão para abrir o modal (pode ficar onde preferir) -->
+<div class="map-actions">
+    <button class="open-modal-btn" onclick="openSensorModal()">
+        Adicionar Sensor
+    </button>
+
+    <button class="open-modal-btn" onclick="generateReport()">
+        Relatório
+    </button>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="sensorModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Cadastrar Novo Sensor</h2>
+            <button class="close-modal" onclick="closeSensorModal()">×</button>
+        </div>
+
+        <form id="sensorForm" class="modal-body">
+            <div class="form-group">
+                <label for="deviceId">ID do Dispositivo</label>
+                <input type="text" id="deviceId" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="latitude">Latitude</label>
+                    <input type="number" id="latitude" step="any" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="longitude">Longitude</label>
+                    <input type="number" id="longitude" step="any" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="equipmentType">Selecionar Equipamento</label>
+                <select id="equipmentType" required>
+                    <option value="">Selecione...</option>
+                    <option value="mpu6050">MPU6050</option>
+                    <option value="dht22">DHT22</option>
+                    <option value="bme280">BME280</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="equipmentName">Nome do Equipamento</label>
+                <input type="text" id="equipmentName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="host">Host / IP</label>
+                <input type="text" id="host" placeholder="ex: 192.168.0.10" required>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeSensorModal()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn-save">
+                    Salvar Sensor
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openSensorModal() {
+    document.getElementById('sensorModal').style.display = 'flex';
+}
+
+function closeSensorModal() {
+    document.getElementById('sensorModal').style.display = 'none';
+}
+
+// Envio do formulário
+document.getElementById('sensorForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const sensorData = {
+        id_dispositivo: document.getElementById('deviceId').value,
+        latitude: document.getElementById('latitude').value,
+        longitude: document.getElementById('longitude').value,
+        equipamento_tipo: document.getElementById('equipmentType').value,
+        equipamento_nome: document.getElementById('equipmentName').value,
+        host: document.getElementById('host').value
+    };
+
+    console.log('Novo sensor:', sensorData);
+
+    // Aqui você pode:
+    // fetch('/api/sensors', { method: 'POST', body: JSON.stringify(sensorData) })
+
+    closeSensorModal();
+});
+</script>
+
+
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.js'></script>
+    <script src="../static/js/inicio.js"></script>
+</body>
+</html>

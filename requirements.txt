@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+websockets
+jinja2
+pydantic-settings
+sqlalchemy
+psycopg2-binary
+email-validator
+pydantic[email]
+numpy
+requests

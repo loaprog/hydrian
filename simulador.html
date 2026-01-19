@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Monitoramento de Vibração e Temperatura</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .header h1 {
+            color: #1e293b;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header h2 {
+            color: #475569;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Filters Section */
+        .filters {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+
+        .filter-item label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        select, .btn {
+            padding: 10px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: #334155;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #94a3b8;
+        }
+
+        .btn-secondary:hover {
+            background: #64748b;
+        }
+
+        /* Charts Container */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .main-chart {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .chart-title h3 {
+            font-size: 18px;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .alert-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* Parameters Grid */
+        .parameters-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .parameter-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .parameter-item h4 {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .parameter-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .parameter-unit {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+
+        .info-panel h4 {
+            color: #475569;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-content {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .timestamp {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .parameters-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .parameters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>Analytics</h1>
+                <h2>BY5 - Exaustor Principal - Lado Motor</h2>
+            </div>
+            <div class="btn">
+                📊 Gráficos
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-item">
+                <label>Período</label>
+                <select id="timeRange">
+                    <option>Últimos 3 meses</option>
+                    <option>Último mês</option>
+                    <option>Última semana</option>
+                    <option>Últimas 24 horas</option>
+                </select>
+            </div>
+            
+            <div class="filter-item">
+                <label>Tipo de Coleta</label>
+                <select id="collectionType">
+                    <option>Contínua</option>
+                    <option>Periódica</option>
+                    <option>Manual</option>
+                </select>
+            </div>
+            
+            <div class="filter-item">
+                <label>Comparar Ativos</label>
+                <select id="compareAssets">
+                    <option>Nenhum</option>
+                    <option>BY4 - Exaustor Auxiliar</option>
+                    <option>BY6 - Ventilador</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-secondary" id="clearBtn">
+                🗑️ Limpar
+            </button>
+            
+            <button class="btn" id="addEventsBtn">
+                📝 Adicionar Eventos
+            </button>
+        </div>
+
+        <!-- Charts Container -->
+        <div class="charts-container">
+            <!-- Main Chart - Aceleração RMS -->
+            <div class="main-chart">
+                <div class="chart-title">
+                    <h3>Aceleração RMS [g]</h3>
+                    <div class="alert-badge">Alerta Manual</div>
+                </div>
+                <canvas id="accelerationChart"></canvas>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3b82f6;"></div>
+                        <span>Horizontal</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #10b981;"></div>
+                        <span>Vertical</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f59e0b;"></div>
+                        <span>Axial</span>
+                    </div>
+                </div>
+
+                <!-- Parameters Grid -->
+                <div class="parameters-grid">
+                    <div class="parameter-item">
+                        <h4>Velocidade Pico a 0</h4>
+                        <div class="parameter-value">12.45 <span class="parameter-unit">mm/s</span></div>
+                    </div>
+                    <div class="parameter-item">
+                        <h4>Velocidade Pico a Pico</h4>
+                        <div class="parameter-value">24.90 <span class="parameter-unit">mm/s</span></div>
+                    </div>
+                    <div class="parameter-item">
+                        <h4>Velocidade Fator de Crista</h4>
+                        <div class="parameter-value">3.2 <span class="parameter-unit">-</span></div>
+                    </div>
+                    <div class="parameter-item">
+                        <h4>Aceleração</h4>
+                        <div class="parameter-value">0.85 <span class="parameter-unit">g</span></div>
+                    </div>
+                    <div class="parameter-item">
+                        <h4>Aceleração RMS</h4>
+                        <div class="parameter-value">0.62 <span class="parameter-unit">g</span></div>
+                    </div>
+                    <div class="parameter-item">
+                        <h4>Aceleração Pico ao 0</h4>
+                        <div class="parameter-value">1.25 <span class="parameter-unit">g</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar - Temperature Chart -->
+            <div class="sidebar">
+                <div class="chart-title">
+                    <h3>Temperatura [°C]</h3>
+                    <div class="alert-badge" style="background: #fee2e2; color: #dc2626;">
+                        Alerta definido em 80°C
+                    </div>
+                </div>
+                <canvas id="temperatureChart"></canvas>
+                
+                <!-- Additional Information -->
+                <div class="info-panel">
+                    <h4>Informações Adicionais</h4>
+                    <div class="info-content">
+                        <p>Temperatura Atual: <span class="timestamp">39.13 °C</span></p>
+                        <p>Status: <span class="timestamp">Dormindo</span></p>
+                        <p>Última Atualização: <span class="timestamp">5 de Março de 2023 às 06:33</span></p>
+                    </div>
+                </div>
+
+                <!-- Event Legend -->
+                <div style="margin-top: 25px;">
+                    <h4 style="margin-bottom: 15px; color: #475569;">Legenda de Eventos</h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 20px; height: 4px; background: #ef4444;"></div>
+                            <span style="font-size: 14px; color: #64748b;">Dormindo</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 20px; height: 4px; background: #f59e0b;"></div>
+                            <span style="font-size: 14px; color: #64748b;">Problemada</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 20px; height: 4px; background: #10b981;"></div>
+                            <span style="font-size: 14px; color: #64748b;">Lubrificação</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datas para o eixo X (simulação dos dados do exemplo)
+        const dates = [
+            '14 Fev', '16 Fev', '18 Fev', '20 Fev', '22 Fev', 
+            '24 Fev', '26 Fev', '28 Fev', '2 Mar', '4 Mar'
+        ];
+
+        // Dados simulados para aceleração RMS
+        const accelerationData = {
+            horizontal: [0.45, 0.52, 0.48, 0.55, 0.62, 0.58, 0.65, 0.60, 0.68, 0.72],
+            vertical: [0.38, 0.42, 0.40, 0.45, 0.50, 0.48, 0.52, 0.49, 0.55, 0.58],
+            axial: [0.32, 0.35, 0.33, 0.38, 0.42, 0.40, 0.45, 0.43, 0.48, 0.52]
+        };
+
+        // Dados simulados para temperatura
+        const temperatureData = [38.5, 39.2, 38.8, 39.5, 40.2, 39.8, 40.5, 40.0, 41.2, 41.5];
+
+        // Configuração do gráfico de Aceleração RMS
+        const accCtx = document.getElementById('accelerationChart').getContext('2d');
+        const accelerationChart = new Chart(accCtx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [
+                    {
+                        label: 'Horizontal',
+                        data: accelerationData.horizontal,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Vertical',
+                        data: accelerationData.vertical,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Axial',
+                        data: accelerationData.axial,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Aceleração RMS [g]',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Data',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Configuração do gráfico de Temperatura
+        const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+        const temperatureChart = new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Temperatura',
+                    data: temperatureData,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    annotation: {
+                        annotations: {
+                            alertLine: {
+                                type: 'line',
+                                yMin: 80,
+                                yMax: 80,
+                                borderColor: '#dc2626',
+                                borderWidth: 2,
+                                borderDash: [6, 6],
+                                label: {
+                                    display: true,
+                                    content: 'Alerta 80°C',
+                                    position: 'end',
+                                    backgroundColor: '#dc2626',
+                                    color: 'white',
+                                    padding: 4
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 35,
+                        max: 85,
+                        title: {
+                            display: true,
+                            text: 'Temperatura [°C]',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Data',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Funções dos botões
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            if (confirm('Deseja limpar todos os filtros?')) {
+                document.getElementById('timeRange').value = 'Últimos 3 meses';
+                document.getElementById('collectionType').value = 'Contínua';
+                document.getElementById('compareAssets').value = 'Nenhum';
+                alert('Filtros limpos com sucesso!');
+            }
+        });
+
+        document.getElementById('addEventsBtn').addEventListener('click', function() {
+            alert('Funcionalidade de adicionar eventos em desenvolvimento!');
+        });
+
+        // Atualizar dados em tempo real (simulação)
+        function updateRealTimeData() {
+            // Simular atualização dos dados a cada 5 segundos
+            setTimeout(() => {
+                // Adicionar novo ponto aos dados
+                const lastDate = dates[dates.length - 1];
+                const nextDate = getNextDate(lastDate);
+                dates.push(nextDate);
+                dates.shift();
+                
+                // Adicionar novos dados de aceleração
+                accelerationData.horizontal.push(
+                    Math.max(0.3, Math.min(0.8, 
+                        accelerationData.horizontal[accelerationData.horizontal.length - 1] + 
+                        (Math.random() - 0.5) * 0.1
+                    ))
+                );
+                accelerationData.horizontal.shift();
+                
+                accelerationData.vertical.push(
+                    Math.max(0.25, Math.min(0.7,
+                        accelerationData.vertical[accelerationData.vertical.length - 1] + 
+                        (Math.random() - 0.5) * 0.1
+                    ))
+                );
+                accelerationData.vertical.shift();
+                
+                accelerationData.axial.push(
+                    Math.max(0.2, Math.min(0.6,
+                        accelerationData.axial[accelerationData.axial.length - 1] + 
+                        (Math.random() - 0.5) * 0.1
+                    ))
+                );
+                accelerationData.axial.shift();
+                
+                // Adicionar novos dados de temperatura
+                temperatureData.push(
+                    Math.max(38, Math.min(42,
+                        temperatureData[temperatureData.length - 1] + 
+                        (Math.random() - 0.5) * 0.3
+                    ))
+                );
+                temperatureData.shift();
+                
+                // Atualizar gráficos
+                accelerationChart.update();
+                temperatureChart.update();
+                
+                // Atualizar informações
+                document.querySelector('.info-content').innerHTML = `
+                    <p>Temperatura Atual: <span class="timestamp">${temperatureData[temperatureData.length - 1].toFixed(2)} °C</span></p>
+                    <p>Status: <span class="timestamp">Dormindo</span></p>
+                    <p>Última Atualização: <span class="timestamp">${getCurrentTimestamp()}</span></p>
+                `;
+                
+                // Chamar novamente
+                updateRealTimeData();
+            }, 5000);
+        }
+
+        // Funções auxiliares
+        function getNextDate(currentDate) {
+            const dateMap = {
+                '14 Fev': '16 Fev',
+                '16 Fev': '18 Fev',
+                '18 Fev': '20 Fev',
+                '20 Fev': '22 Fev',
+                '22 Fev': '24 Fev',
+                '24 Fev': '26 Fev',
+                '26 Fev': '28 Fev',
+                '28 Fev': '2 Mar',
+                '2 Mar': '4 Mar',
+                '4 Mar': '6 Mar'
+            };
+            return dateMap[currentDate] || '8 Mar';
+        }
+
+        function getCurrentTimestamp() {
+            const now = new Date();
+            const options = { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            };
+            return now.toLocaleDateString('pt-BR', options) + ' às ' + 
+                   now.getHours().toString().padStart(2, '0') + ':' + 
+                   now.getMinutes().toString().padStart(2, '0');
+        }
+
+        // Iniciar atualização em tempo real
+        updateRealTimeData();
+    </script>
+</body>
+</html>
