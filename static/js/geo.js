@@ -1,0 +1,173 @@
+async function loadSensorsOnMap() {
+    const userData = JSON.parse(localStorage.getItem('data'));
+
+    if (!userData || !userData.id) {
+        console.warn('Usuário não autenticado');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/sensors/user/${userData.id}`);
+
+        if (!response.ok) {
+            console.warn('Nenhum sensor encontrado');
+            return;
+        }
+
+        const sensors = await response.json();
+
+        sensors.forEach(sensor => {
+            const [lat, lng] = sensor.location.split(',').map(Number);
+
+            const popupHtml = `
+                <div style="
+                    width:320px;
+                    max-width:90vw;
+                    font-family: Arial, sans-serif;
+                ">
+
+                    <!-- HEADER -->
+                    <div style="
+                        margin-bottom:8px;
+                    ">
+                        <span style="
+                            background:#2885f9;
+                            color:#ffffff;
+                            font-size:13px;
+                            font-weight:bold;
+                            padding:4px 8px;
+                            border-radius:4px;
+                        ">
+                            ✔ Em operação
+                        </span>
+                    </div>
+
+                    <!-- BODY -->
+                    <div style="
+                        display:flex;
+                        gap:10px;
+                    ">
+
+                        <!-- IMAGE -->
+                        <div>
+                            ${
+                                sensor.image_url
+                                ? `<a href="${sensor.image_url}" target="_blank">
+                                        <img src="${sensor.image_url}" style="
+                                            width:110px;
+                                            height:110px;
+                                            object-fit:cover;
+                                            border-radius:8px;
+                                            cursor:pointer;
+                                        ">
+                                   </a>`
+                                : `<div style="
+                                        width:110px;
+                                        height:110px;
+                                        background:#eee;
+                                        border-radius:8px;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        font-size:12px;
+                                        color:#777;
+                                    ">
+                                        Sem imagem
+                                    </div>`
+                            }
+                        </div>
+
+                        <!-- INFO -->
+                        <div style="flex:1;">
+                            <div style="
+                                font-size:16px;
+                                font-weight:bold;
+                                margin-bottom:4px;
+                            ">
+                                ${sensor.sensor_name}
+                            </div>
+
+                            <div style="
+                                font-size:13px;
+                                color:#555;
+                                margin-bottom:6px;
+                            ">
+                                Equipamento: ${sensor.equip}
+                            </div>
+
+                            <div style="
+                                font-size:13px;
+                                color:#555;
+                                margin-bottom:6px;
+                            ">
+                                Host: ${sensor.host}
+                            </div>
+
+                            <div style="
+                                font-size:12px;
+                                color:#777;
+                            ">
+                                Criado em:<br>
+                                ${new Date(sensor.created_at).toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div style="
+                        margin-top:12px;
+                        text-align:center;
+                    ">
+                        <button
+                            onclick="visualizarSensor('${sensor.id_sensor}')"
+                            style="
+                                background:#1e88e5;
+                                color:white;
+                                border:none;
+                                padding:8px 14px;
+                                border-radius:6px;
+                                font-size:13px;
+                                font-weight:bold;
+                                cursor:pointer;
+                            "
+                        >
+                            Visualizar dados do sensor
+                        </button>
+                    </div>
+
+                </div>
+            `;
+
+            new mapboxgl.Marker({ color: '#1E88E5' })
+                .setLngLat([lng, lat])
+                .setPopup(
+                    new mapboxgl.Popup({
+                        offset: 25,
+                        maxWidth: '400px'
+                    }).setHTML(popupHtml)
+                )
+                .addTo(map);
+        });
+
+        updateMapStats(sensors);
+
+    } catch (error) {
+        console.error('Erro ao carregar sensores:', error);
+    }
+}
+
+function updateMapStats(sensors) {
+    document.getElementById('activeDevices').textContent =
+        `${sensors.length} (${sensors.length > 0 ? '100%' : '0%'})`;
+
+    document.getElementById('lastUpdate').textContent =
+        new Date().toLocaleString();
+}
+
+/* Função placeholder para depois abrir gráfico / modal / rota */
+function visualizarSensor(sensorId) {
+    console.log('Visualizar dados do sensor:', sensorId);
+    // Ex:
+    // window.location.href = `/sensor/${sensorId}`;
+    // ou abrir modal
+}

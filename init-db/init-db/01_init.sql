@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS hydrian.sensors (
     sensor_name TEXT NOT NULL,
     user_id INT NOT NULL REFERENCES hydrian.users(id),
     equip TEXT NOT NULL,
+    image BYTEA NOT NULL,
+    image_type TEXT NOT NULL,
     location TEXT NOT NULL,
     host TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()

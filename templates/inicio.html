@@ -68,58 +68,60 @@
             <button class="close-modal" onclick="closeSensorModal()">×</button>
         </div>
 
-        <form id="sensorForm" class="modal-body">
-            <div class="form-group">
-                <label for="deviceId">ID do Dispositivo</label>
-                <input type="text" id="deviceId" required>
-            </div>
+<form id="sensorForm" class="modal-body" enctype="multipart/form-data">
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="latitude">Latitude</label>
-                    <input type="number" id="latitude" step="any" required>
-                </div>
+    <div class="form-group">
+        <label for="deviceId">ID do Dispositivo</label>
+        <input type="text" id="deviceId" name="sensor_name" required>
+    </div>
 
-                <div class="form-group">
-                    <label for="longitude">Longitude</label>
-                    <input type="number" id="longitude" step="any" required>
-                </div>
-            </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="latitude">Latitude</label>
+            <input type="number" id="latitude" name="latitude" step="any" required>
+        </div>
 
-            <div class="form-group">
-                <label for="equipmentType">Selecionar Equipamento</label>
-                <select id="equipmentType" required>
-                    <option value="">Selecione o equipamento</option>
-                    <option value="motor_eletrico">Motor Elétrico</option>
-                    <option value="bomba_centrifuga">Bomba Centrífuga</option>
-                    <option value="conjunto_motobomba">Conjunto Moto-Bomba</option>
-                    <option value="bomba_submersa">Bomba Submersa</option>
-                    <option value="bomba_dosadora">Bomba Dosadora</option>
-                    <option value="redutor">Redutor / Caixa de Engrenagem</option>
-                    <option value="acoplamento">Acoplamento</option>
-                    <option value="agitador">Agitador de Tanque</option>
-                </select>
-            </div>
+        <div class="form-group">
+            <label for="longitude">Longitude</label>
+            <input type="number" id="longitude" name="longitude" step="any" required>
+        </div>
+    </div>
 
-            <div class="form-group">
-                <label for="equipmentName">Nome do Equipamento</label>
-                <input type="text" id="equipmentName" required>
-            </div>
+    <div class="form-group">
+        <label for="equipmentType">Selecionar Equipamento</label>
+        <select id="equipmentType" name="equip" required>
+            <option value="">Selecione o equipamento</option>
+            <option value="motor_eletrico">Motor Elétrico</option>
+            <option value="bomba_centrifuga">Bomba Centrífuga</option>
+            <option value="conjunto_motobomba">Conjunto Moto-Bomba</option>
+            <option value="bomba_submersa">Bomba Submersa</option>
+            <option value="bomba_dosadora">Bomba Dosadora</option>
+            <option value="redutor">Redutor / Caixa de Engrenagem</option>
+            <option value="acoplamento">Acoplamento</option>
+            <option value="agitador">Agitador de Tanque</option>
+        </select>
+    </div>
 
-            <div class="form-group">
-                <label for="host">Host / IP</label>
-                <input type="text" id="host" placeholder="ex: 192.168.0.10" required>
-            </div>
+    <div class="form-group">
+        <label for="host">Host / IP</label>
+        <input type="text" id="host" name="host" required>
+    </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn-cancel" onclick="closeSensorModal()">
-                    Cancelar
-                </button>
-                <button type="submit" class="btn-save">
-                    Salvar Sensor
-                </button>
-            </div>
-        </form>
+    <div class="form-group">
+        <label for="image">Imagem do Sensor</label>
+        <input type="file" id="image" name="image" accept="image/*">
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeSensorModal()">
+            Cancelar
+        </button>
+        <button type="submit" class="btn-save">
+            Salvar Sensor
+        </button>
+    </div>
+</form>
+
     </div>
 </div>
 

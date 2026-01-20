@@ -131,6 +131,7 @@ Cada sensor está associado a:
 🚧 **Em desenvolvimento**
 
 Próximos passos:
+* Armazenar leituras dos sensores no banco de dados (atualmente apenas exibição em tempo real)
 * Dashboard com gráficos
 * Autenticação JWT
 * Alertas automáticos

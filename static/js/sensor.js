@@ -17,38 +17,39 @@ document.getElementById('sensorForm').addEventListener('submit', async function 
         return;
     }
 
-    const userId = userData.id;
-    console.log('User ID:', userId);
+    const formData = new FormData();
 
-    try {
-        const response = await fetch(`/sensors/add?user_id=${userId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                sensor_name: document.getElementById('deviceId').value,
-                latitude: parseFloat(document.getElementById('latitude').value),
-                longitude: parseFloat(document.getElementById('longitude').value),
-                equip: document.getElementById('equipmentType').value,
-                host: document.getElementById('host').value
-            })
-        });
-
-        if (!response.ok) {
-            const err = await response.json();
-            alert(err.detail || 'Erro ao cadastrar sensor');
-            return;
-        }
-
-        const data = await response.json();
-        console.log('Sensor criado:', data);
-
-        closeSensorModal();
-        document.getElementById('sensorForm').reset();
-
-    } catch (error) {
-        console.error('Erro de conexão:', error);
-        alert('Erro ao conectar com o servidor');
+    formData.append("sensor_name", document.getElementById('deviceId').value);
+    formData.append("latitude", document.getElementById('latitude').value);
+    formData.append("longitude", document.getElementById('longitude').value);
+    formData.append("equip", document.getElementById('equipmentType').value);
+    formData.append("host", document.getElementById('host').value);
+    formData.append("user_id", userData.id); // ✅ AQUI
+     
+    const imageInput = document.getElementById('image');
+    if (imageInput.files.length > 0) {
+        formData.append("image", imageInput.files[0]);
     }
+
+    const response = await fetch('/sensors/add', { // ✅ SEM query param
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        const err = await response.json();
+        console.error(err);
+        alert(JSON.stringify(err.detail));
+        return;
+    }
+
+    const data = await response.json();
+    console.log('Sensor criado:', data);
+
+    closeSensorModal();
+    document.getElementById('sensorForm').reset();
+
+    setTimeout(() => {
+    window.location.reload();
+    }, 800);
 });
