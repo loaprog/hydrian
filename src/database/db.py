@@ -1,10 +1,11 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from configs.config import get_settings
-from sqlalchemy.ext.declarative import declarative_base
 
 settings = get_settings()
 
+# Síncrono (para FastAPI normal)
 engine = create_engine(settings.db_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -14,5 +15,14 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# Async (para workers ou endpoints async)
+async_database_url = settings.db_url.replace("postgresql://", "postgresql+asyncpg://")
+async_engine = create_async_engine(async_database_url, echo=False, future=True)
+AsyncSessionLocal = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+
+async def get_async_db():
+    async with AsyncSessionLocal() as session:
+        yield session
 
 Base = declarative_base()

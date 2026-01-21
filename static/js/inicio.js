@@ -23,7 +23,6 @@ let map;
                 center: [-49.9465156, -21.4603331],
                 zoom: 11,
                 pitch: 45,
-                bearing: -17.6
             });
 
             map.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -39,7 +38,6 @@ let map;
 
                 map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
 
-                // 🔥 carrega sensores quando o mapa estiver pronto
                 loadSensorsOnMap();
             });
         }

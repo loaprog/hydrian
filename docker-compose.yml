@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   api:
     build:
@@ -8,8 +10,23 @@ services:
       - "8010:8000"
     env_file:
       - .env
+    environment:
+      - RUN_ENV=api
     depends_on:
       - db
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: vibration_worker
+    env_file:
+      - .env
+    environment:
+      - RUN_ENV=worker
+    depends_on:
+      - db
+
 
   db:
     image: postgis/postgis:15-3.3
@@ -20,5 +37,8 @@ services:
       POSTGRES_DB: hydrian_db
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
   postgres_data:

@@ -1,3 +1,9 @@
+const equipIcons = {
+    motor_eletrico: "/static/img/motor_eletrico.png",
+    bomba_centrifuga: "/static/img/bomba_centrifuga.png",
+    conjunto_motobomba: "/static/img/moto_bomba.png",
+};
+
 async function loadSensorsOnMap() {
     const userData = JSON.parse(localStorage.getItem('data'));
 
@@ -132,19 +138,67 @@ async function loadSensorsOnMap() {
                             "
                         >
                             Visualizar dados do sensor
+                            
                         </button>
                     </div>
 
                 </div>
             `;
 
-            new mapboxgl.Marker({ color: '#1E88E5' })
+            // Determinar qual ícone usar baseado no equipamento
+            let iconUrl;
+            if (sensor.equip && equipIcons[sensor.equip]) {
+                iconUrl = equipIcons[sensor.equip];
+            } else {
+                // Ícone padrão caso não encontre o equipamento
+                iconUrl = "/static/img/motor_eletrico.png";
+            }
+
+            // Criar elemento HTML personalizado para o marcador
+            const el = document.createElement('div');
+            el.className = 'custom-marker';
+            el.style.cssText = `
+                width: 32px;
+                height: 32px;
+                position: relative; /* importante */
+            `;
+
+            // Cria o ícone dentro do wrapper
+            const icon = document.createElement('div');
+            icon.style.cssText = `
+                width: 32px;
+                height: 32px;
+                background-image: url('${iconUrl}');
+                background-size: 20px 20px;
+                background-repeat: no-repeat;
+                background-position: center;
+                border-radius: 50%;
+                border: 2px solid #1E88E5;
+                background-color: white;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+                cursor: pointer;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            `;
+
+            // Adiciona efeito hover no ícone interno
+            icon.addEventListener('mouseenter', () => {
+                icon.style.transform = 'scale(1.3)';
+                icon.style.boxShadow = '0 4px 12px rgba(0,0,0,0.35)';
+            });
+            icon.addEventListener('mouseleave', () => {
+                icon.style.transform = 'scale(1)';
+                icon.style.boxShadow = '0 2px 5px rgba(0,0,0,0.25)';
+            });
+
+            // Adiciona o ícone ao wrapper
+            el.appendChild(icon);
+
+            // Cria o marcador Mapbox
+            new mapboxgl.Marker(el)
                 .setLngLat([lng, lat])
                 .setPopup(
-                    new mapboxgl.Popup({
-                        offset: 25,
-                        maxWidth: '400px'
-                    }).setHTML(popupHtml)
+                    new mapboxgl.Popup({ offset: 25, maxWidth: '400px' })
+                        .setHTML(popupHtml)
                 )
                 .addTo(map);
         });

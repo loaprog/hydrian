@@ -3,8 +3,10 @@ uvicorn
 websockets
 jinja2
 pydantic-settings
-sqlalchemy
+sqlalchemy>=1.4
 psycopg2-binary
+asyncpg
+httpx[http2]
 email-validator
 pydantic[email]
 numpy

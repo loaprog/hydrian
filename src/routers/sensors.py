@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database.db import get_db
-from models.sensor import Sensor, SensorCreate
+from models.sensor import Sensor, SensorCreate, SensorDataProcessed
 from datetime import datetime
 from fastapi.responses import Response
+from utils.fft_bytes import bytes_to_fft_array, fft_to_json_safe
+from database.db import get_async_db
+from sqlalchemy.ext.asyncio import AsyncSession
+import numpy as np
 
 sensor_router = APIRouter(prefix="/sensors", tags=["sensors"])
 
@@ -12,12 +17,15 @@ async def create_sensor(
     sensor: SensorCreate = Depends(SensorCreate.as_form),
     user_id: int = Form(...),
     image: UploadFile = File(None),
-    db_session: Session = Depends(get_db)
+    db_session: AsyncSession = Depends(get_async_db)
 ):
-    existing_sensor = db_session.query(Sensor).filter(
-        Sensor.sensor_name == sensor.sensor_name,
-        Sensor.user_id == user_id
-    ).first()
+    existing_sensor = await db_session.execute(
+        select(Sensor).filter(
+            Sensor.sensor_name == sensor.sensor_name,
+            Sensor.user_id == user_id
+        )
+    )
+    existing_sensor = existing_sensor.scalars().first()
 
     if existing_sensor:
         raise HTTPException(
@@ -46,8 +54,8 @@ async def create_sensor(
     )
 
     db_session.add(new_sensor)
-    db_session.commit()
-    db_session.refresh(new_sensor)
+    await db_session.commit()        
+    await db_session.refresh(new_sensor)  #
 
     return {
         "id_sensor": new_sensor.id_sensor,
@@ -60,15 +68,18 @@ async def create_sensor(
 
 
 @sensor_router.get("/user/{user_id}")
-async def get_sensor_by_user(user_id: int, db_session: Session = Depends(get_db)):
-    sensors = db_session.query(Sensor).filter(Sensor.user_id == user_id).all()
-    
-    if  not sensors:
+async def get_sensor_by_user(user_id: int, db: AsyncSession = Depends(get_async_db)):
+    result = await db.execute(
+        select(Sensor).where(Sensor.user_id == user_id)
+    )
+    sensors = result.scalars().all()  # agora sim, lista de objetos Sensor
+
+    if not sensors:
         raise HTTPException(
             status_code=404,
             detail="Nenhum sensor encontrado para este usuário"
         )
-    
+
     return [
         {
             "id_sensor": sensor.id_sensor,
@@ -84,10 +95,11 @@ async def get_sensor_by_user(user_id: int, db_session: Session = Depends(get_db)
 
 
 @sensor_router.get("/{sensor_id}/image")
-def get_sensor_image(sensor_id: int, db_session: Session = Depends(get_db)):
-    sensor = db_session.query(Sensor).filter(
+async def get_sensor_image(sensor_id: int, db_session: AsyncSession = Depends(get_async_db)):
+    sensor = await db_session.execute(select(Sensor).filter(
         Sensor.id_sensor == sensor_id
-    ).first()
+    ))
+    sensor = sensor.scalars().first()
 
     if not sensor or not sensor.image:
         raise HTTPException(status_code=404, detail="Imagem não encontrada")
@@ -98,3 +110,47 @@ def get_sensor_image(sensor_id: int, db_session: Session = Depends(get_db)):
     )
 
 
+@sensor_router.get("/{user_id}/{sensor_id}/processed_data")
+async def get_processed_data(
+    user_id: int,
+    sensor_id: int,
+    limit: int = Query(100, description="Número máximo de registros retornados"),
+    db: AsyncSession = Depends(get_async_db)
+):
+    query = (
+        select(SensorDataProcessed)
+        .where(
+            SensorDataProcessed.user_id == user_id,
+            SensorDataProcessed.sensor_id == sensor_id
+        )
+        .order_by(SensorDataProcessed.timestamp.asc())
+        .limit(limit)
+    )
+
+    result = await db.execute(query)
+    data_list = result.scalars().all()
+
+    if not data_list:
+        raise HTTPException(status_code=404, detail="Nenhum dado processado encontrado")
+
+    processed = []
+    for row in data_list:
+        processed.append({
+            "sensor_id": row.sensor_id,
+            "user_id": row.user_id,
+            "fft_ax": fft_to_json_safe(bytes_to_fft_array(row.fft_ax)),
+            "fft_ay": fft_to_json_safe(bytes_to_fft_array(row.fft_ay)),
+            "fft_az": fft_to_json_safe(bytes_to_fft_array(row.fft_az)),
+            "rms": row.rms,
+            "peak": row.peak,
+            "crest_factor": row.crest_factor,
+            "kurtosis": row.kurtosis,
+            "timestamp": row.timestamp.isoformat()
+        })
+
+    return {
+        "sensor_id": sensor_id,
+        "user_id": user_id,
+        "records_count": len(processed),
+        "data": processed
+    }
