@@ -162,7 +162,7 @@ async def get_processed_data(
 
 
 @sensor_router.get("/{user_id}/{sensor_id}/raw_data")
-async def get_raw_data(user_id: int, sensor_id: int, limit: int = Query(100, description="Número máximo de registros retornados"), db: AsyncSession = Depends(get_async_db)):
+async def get_raw_data(user_id: int, sensor_id: int, limit: int = Query(100, description="Número máximo de registros retornados"), start: Optional[datetime] = Query(None, description="Data/hora inicial (ISO)"), end: Optional[datetime] = Query(None, description="Data/hora final (ISO)"), db: AsyncSession = Depends(get_async_db)):
     query = (
         select(SensorDataRaw)
         .where(
@@ -172,6 +172,11 @@ async def get_raw_data(user_id: int, sensor_id: int, limit: int = Query(100, des
         .order_by(SensorDataRaw.timestamp.asc())
         .limit(limit)
     )
+
+    if start:
+        query = query.where(SensorDataRaw.timestamp >= start)
+    if end:
+        query = query.where(SensorDataRaw.timestamp <= end)
 
     result = await db.execute(query)
     data_list = result.scalars().all()

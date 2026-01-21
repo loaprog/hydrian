@@ -147,7 +147,6 @@
 
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.js'></script>
     <script>
-        // Pré-seleção de filtro das últimas 24h
         const now = new Date();
         const yesterday = new Date(now.getTime() - 24*60*60*1000);
         document.getElementById('filterStart').value = yesterday.toISOString().slice(0,16);

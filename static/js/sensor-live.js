@@ -5,7 +5,6 @@ let sensorInterval = null;
 async function visualizarSensor(sensorId) {
     const content = document.getElementById('sideModalContent');
 
-    // HTML do modal com filtro de datas e gráficos
     content.innerHTML = `
         <p><strong>Sensor:</strong> ${sensorId}</p>
 
@@ -31,7 +30,6 @@ async function visualizarSensor(sensorId) {
     sideModal.style.display = 'flex';
     sideModal.classList.remove('expanded');
 
-    // Pré-seleção de últimas 24h
     const now = new Date();
     const yesterday = new Date(now.getTime() - 24*60*60*1000);
     const filterStartInput = document.getElementById('filterStart');
@@ -40,15 +38,12 @@ async function visualizarSensor(sensorId) {
     filterStartInput.value = yesterday.toISOString().slice(0,16);
     filterEndInput.value = now.toISOString().slice(0,16);
 
-    // Função para carregar dados
     const fetchAndRender = async () => {
         await loadSensorData(sensorId, filterStartInput.value, filterEndInput.value);
     };
 
-    // Botão filtrar
     document.getElementById('applyFilter').addEventListener('click', fetchAndRender);
 
-    // Botão limpar: volta para 24h padrão
     document.getElementById('clearFilter').addEventListener('click', () => {
         filterStartInput.value = yesterday.toISOString().slice(0,16);
         filterEndInput.value = now.toISOString().slice(0,16);
@@ -57,10 +52,8 @@ async function visualizarSensor(sensorId) {
 
     if (sensorInterval) clearInterval(sensorInterval);
 
-    // Carrega dados inicialmente com últimas 24h
     await fetchAndRender();
 
-    // Atualização automática respeitando filtro
     sensorInterval = setInterval(fetchAndRender, 3000);
 }
 
@@ -92,7 +85,6 @@ async function loadSensorData(sensorId, start = null, end = null) {
         const peakCanvas = document.getElementById('peakChart');
 
         if (!response.ok) {
-            // Se 404 ou nenhum dado
             noDataMsg.style.display = 'block';
             if (sensorCharts.rms) {
                 sensorCharts.rms.data.labels = [];
@@ -123,7 +115,6 @@ async function loadSensorData(sensorId, start = null, end = null) {
         const rms = data.map(d => d.rms);
         const peak = data.map(d => d.peak);
 
-        // GRÁFICO RMS
         if (!sensorCharts.rms) {
             const ctx = rmsCanvas.getContext('2d');
             sensorCharts.rms = new Chart(ctx, {
@@ -146,7 +137,6 @@ async function loadSensorData(sensorId, start = null, end = null) {
             sensorCharts.rms.update();
         }
 
-        // GRÁFICO PEAK
         if (!sensorCharts.peak) {
             const ctx2 = peakCanvas.getContext('2d');
             sensorCharts.peak = new Chart(ctx2, {

@@ -24,14 +24,14 @@ document.getElementById('sensorForm').addEventListener('submit', async function 
     formData.append("longitude", document.getElementById('longitude').value);
     formData.append("equip", document.getElementById('equipmentType').value);
     formData.append("host", document.getElementById('host').value);
-    formData.append("user_id", userData.id); // ✅ AQUI
+    formData.append("user_id", userData.id);  
      
     const imageInput = document.getElementById('image');
     if (imageInput.files.length > 0) {
         formData.append("image", imageInput.files[0]);
     }
 
-    const response = await fetch('/sensors/add', { // ✅ SEM query param
+    const response = await fetch('/sensors/add', { 
         method: 'POST',
         body: formData
     });
