@@ -5,7 +5,6 @@ from configs.config import get_settings
 
 settings = get_settings()
 
-# Síncrono (para FastAPI normal)
 engine = create_engine(settings.db_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -16,7 +15,6 @@ def get_db():
     finally:
         db.close()
 
-# Async (para workers ou endpoints async)
 async_database_url = settings.db_url.replace("postgresql://", "postgresql+asyncpg://")
 async_engine = create_async_engine(async_database_url, echo=False, future=True)
 AsyncSessionLocal = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)

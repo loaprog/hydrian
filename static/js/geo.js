@@ -221,18 +221,125 @@ function updateMapStats(sensors) {
 /* Função placeholder para depois abrir gráfico / modal / rota */
 const sideModal = document.getElementById('sensorSideModal');
 
-function visualizarSensor(sensorId) {
-    const content = document.getElementById('sideModalContent');
-    content.innerHTML = `<p>Carregando dados do sensor ${sensorId}...</p>`;
-    sideModal.style.display = 'flex'; // mostra modal
-    sideModal.classList.remove('expanded'); // tamanho padrão
-}
+let sensorCharts = {}; // guarda gráficos por sensor
+let sensorInterval = null; // intervalo para atualizar dados
 
-function closeSideModal() {
-    sideModal.style.display = 'none'; // esconde modal
-    sideModal.classList.remove('expanded'); // volta ao tamanho padrão
+async function visualizarSensor(sensorId) {
+    const content = document.getElementById('sideModalContent');
+    content.innerHTML = `
+        <p>Carregando dados do sensor ${sensorId}...</p>
+        <canvas id="rmsChart" width="400" height="150"></canvas>
+        <canvas id="peakChart" width="400" height="150"></canvas>
+    `;
+    sideModal.style.display = 'flex';
+    sideModal.classList.remove('expanded');
+
+    // limpa intervalo anterior
+    if (sensorInterval) clearInterval(sensorInterval);
+
+    // inicia atualização
+    await loadSensorData(sensorId);
+
+    sensorInterval = setInterval(() => {
+        loadSensorData(sensorId);
+    }, 3000); // atualiza a cada 3s
 }
 
 function toggleExpandSideModal() {
-    sideModal.classList.toggle('expanded'); // alterna entre expandido e normal
+    const sideModal = document.getElementById('sensorSideModal');
+    sideModal.classList.toggle('expanded');
+
+    // Atualiza os gráficos para ocupar o novo tamanho
+    if (sensorCharts.rms) sensorCharts.rms.resize();
+    if (sensorCharts.peak) sensorCharts.peak.resize();
+}
+
+function closeSideModal() {
+    const sideModal = document.getElementById('sensorSideModal');
+    sideModal.style.display = 'none';
+    sideModal.classList.remove('expanded');
+    if (sensorInterval) clearInterval(sensorInterval);
+    sensorCharts = {};
+}
+
+async function loadSensorData(sensorId) {
+    try {
+        const userData = JSON.parse(localStorage.getItem('data'));
+        const response = await fetch(`/sensors/${userData.id}/${sensorId}/processed_data`);
+        const result = await response.json();
+        const data = result.data;
+
+        if (!data || data.length === 0) {
+            document.getElementById('sideModalContent').innerHTML = `<p>Nenhum dado disponível</p>`;
+            return;
+        }
+
+        // Preparar arrays de dados
+        const timestamps = data.map(d => new Date(d.timestamp).toLocaleTimeString());
+        const rms = data.map(d => d.rms);
+        const peak = data.map(d => d.peak);
+
+        // Criar ou atualizar gráfico RMS
+        if (!sensorCharts.rms) {
+            const ctx = document.getElementById('rmsChart').getContext('2d');
+            sensorCharts.rms = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'RMS',
+                        data: rms,
+                        borderColor: '#2885F9',
+                        backgroundColor: 'rgba(40, 133, 249, 0.2)',
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    animation: false,
+                    responsive: true,
+                    scales: {
+                        x: { display: true },
+                        y: { display: true }
+                    }
+                }
+            });
+        } else {
+            sensorCharts.rms.data.labels = timestamps;
+            sensorCharts.rms.data.datasets[0].data = rms;
+            sensorCharts.rms.update();
+        }
+
+        // Criar ou atualizar gráfico Peak
+        if (!sensorCharts.peak) {
+            const ctx2 = document.getElementById('peakChart').getContext('2d');
+            sensorCharts.peak = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Peak',
+                        data: peak,
+                        borderColor: '#E53935',
+                        backgroundColor: 'rgba(229, 57, 53, 0.2)',
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    animation: false,
+                    responsive: true,
+                    scales: {
+                        x: { display: true },
+                        y: { display: true }
+                    }
+                }
+            });
+        } else {
+            sensorCharts.peak.data.labels = timestamps;
+            sensorCharts.peak.data.datasets[0].data = peak;
+            sensorCharts.peak.update();
+        }
+
+    } catch (error) {
+        console.error('Erro ao carregar dados do sensor:', error);
+    }
 }

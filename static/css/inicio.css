@@ -486,9 +486,17 @@
     margin-left: 5px;
 }
 
-/* Corpo */
 .side-modal-body {
     padding: 16px;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* espaço entre gráficos */
     overflow-y: auto;
+}
+
+.side-modal-body canvas {
+    width: 100%;
+    max-height: 400px; /* máximo que o gráfico pode ocupar */
+    object-fit: contain; /* mantém proporção sem distorcer */
 }

@@ -48,12 +48,10 @@ class SensorDataProcessed(Base):
     sensor_id = Column(Integer, ForeignKey("hydrian.sensors.id_sensor"), nullable=False, index=True)
     user_id = Column(Integer, index=True)
 
-    # FFT
-    fft_ax = Column(LargeBinary, nullable=True)  # numpy array serialized (pickle ou np.save)
+    fft_ax = Column(LargeBinary, nullable=True)  
     fft_ay = Column(LargeBinary, nullable=True)
     fft_az = Column(LargeBinary, nullable=True)
 
-    # Indicadores de análise
     rms = Column(Float, nullable=True)           
     peak = Column(Float, nullable=True)
     crest_factor = Column(Float, nullable=True)

@@ -12,22 +12,19 @@ from sqlalchemy import text
 import io
 
 settings = get_settings()
-DATABASE_URL = settings.db_url  # ex: postgresql+asyncpg://user:pass@host/db
+DATABASE_URL = settings.db_url 
 
-# 🔹 Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("async_worker")
 
-# 🔹 Engine async
 engine = create_async_engine(DATABASE_URL, echo=False, future=True)
 AsyncSessionLocal = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
-BATCH_SIZE = 50        # Quantidade de leituras para processar FFT
-COLLECT_INTERVAL = 5   # Segundos entre coletas
-batch_lock = asyncio.Lock()  # Protege acesso ao batch compartilhado
+BATCH_SIZE = 50      
+COLLECT_INTERVAL = 5   
+batch_lock = asyncio.Lock()  
 
-# 🔹 Batches separados por sensor
-sensor_batches = {}  # sensor_id -> list of SensorDataRaw
+sensor_batches = {}  
 
 @asynccontextmanager
 async def session_scope():
@@ -66,7 +63,6 @@ def process_raw_batch(raw_batch: list) -> SensorDataProcessed:
     crest_factor = peak / rms if rms != 0 else None
     kurtosis = ((axes - axes.mean())**4).mean() / (axes.var()**2) if axes.var() != 0 else None
 
-    # Logging detalhado
     logger.info(f"[Sensor {raw_batch[0].sensor_id}] Processando batch ({len(raw_batch)} leituras)")
     logger.info(f"FFT AX: {fft_ax[:5]} ...")
     logger.info(f"FFT AY: {fft_ay[:5]} ...")
@@ -115,10 +111,8 @@ async def fetch_sensor(sensor_data: dict):
                         sensor_batches[sensor_id] = []
                     sensor_batches[sensor_id].append(raw)
 
-                    # Log progresso
                     logger.info(f"[Sensor {sensor_id}] Batch size atual: {len(sensor_batches[sensor_id])}/{BATCH_SIZE}")
 
-                    # Processa se atingir batch size
                     if len(sensor_batches[sensor_id]) >= BATCH_SIZE:
                         await save_batch_per_sensor(sensor_id)
 
@@ -158,7 +152,6 @@ async def collect_sensors():
                 tasks = [fetch_sensor(s) for s in sensors]
                 await asyncio.gather(*tasks)
 
-            # 🔹 Log do progresso geral a cada COLLECT_INTERVAL
             async with batch_lock:
                 for sensor_id, batch in sensor_batches.items():
                     if batch:

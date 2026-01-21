@@ -21,7 +21,6 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     return Settings()
 
-# 🔹 Inicializa templates e static SOMENTE na API
 if os.environ.get("RUN_ENV") == "api":
     templates = Jinja2Templates(directory="/templates")
     static_files = StaticFiles(directory="/static")

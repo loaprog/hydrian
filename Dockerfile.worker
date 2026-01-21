@@ -1,7 +1,5 @@
-# Dockerfile.worker
 FROM python:3.11-slim
 
-# Diretório de trabalho
 WORKDIR /app
 
 COPY requirements.txt .
@@ -11,5 +9,4 @@ COPY src /app/src
 
 ENV PYTHONPATH=/app/src
 
-# Comando padrão para rodar o collector
 CMD ["python", "src/worker/collector.py"]

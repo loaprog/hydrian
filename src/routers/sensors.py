@@ -55,7 +55,7 @@ async def create_sensor(
 
     db_session.add(new_sensor)
     await db_session.commit()        
-    await db_session.refresh(new_sensor)  #
+    await db_session.refresh(new_sensor)  
 
     return {
         "id_sensor": new_sensor.id_sensor,
@@ -72,7 +72,7 @@ async def get_sensor_by_user(user_id: int, db: AsyncSession = Depends(get_async_
     result = await db.execute(
         select(Sensor).where(Sensor.user_id == user_id)
     )
-    sensors = result.scalars().all()  # agora sim, lista de objetos Sensor
+    sensors = result.scalars().all()  
 
     if not sensors:
         raise HTTPException(
