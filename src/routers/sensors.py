@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Q
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database.db import get_db
-from models.sensor import Sensor, SensorCreate, SensorDataProcessed
+from models.sensor import Sensor, SensorCreate, SensorDataProcessed, SensorDataRaw, SensorDataRawSchema
 from datetime import datetime
 from fastapi.responses import Response
 from utils.fft_bytes import bytes_to_fft_array, fft_to_json_safe
 from database.db import get_async_db
 from sqlalchemy.ext.asyncio import AsyncSession
 import numpy as np
+from typing import Optional
 
 sensor_router = APIRouter(prefix="/sensors", tags=["sensors"])
 
@@ -115,17 +116,21 @@ async def get_processed_data(
     user_id: int,
     sensor_id: int,
     limit: int = Query(100, description="Número máximo de registros retornados"),
+    start: Optional[datetime] = Query(None, description="Data/hora inicial (ISO)"),
+    end: Optional[datetime] = Query(None, description="Data/hora final (ISO)"),
     db: AsyncSession = Depends(get_async_db)
 ):
-    query = (
-        select(SensorDataProcessed)
-        .where(
-            SensorDataProcessed.user_id == user_id,
-            SensorDataProcessed.sensor_id == sensor_id
-        )
-        .order_by(SensorDataProcessed.timestamp.asc())
-        .limit(limit)
-    )
+    query = select(SensorDataProcessed).where(
+        SensorDataProcessed.user_id == user_id,
+        SensorDataProcessed.sensor_id == sensor_id
+    ).order_by(SensorDataProcessed.timestamp.asc())
+
+    if start:
+        query = query.where(SensorDataProcessed.timestamp >= start)
+    if end:
+        query = query.where(SensorDataProcessed.timestamp <= end)
+
+    query = query.limit(limit)
 
     result = await db.execute(query)
     data_list = result.scalars().all()
@@ -154,3 +159,24 @@ async def get_processed_data(
         "records_count": len(processed),
         "data": processed
     }
+
+
+@sensor_router.get("/{user_id}/{sensor_id}/raw_data")
+async def get_raw_data(user_id: int, sensor_id: int, limit: int = Query(100, description="Número máximo de registros retornados"), db: AsyncSession = Depends(get_async_db)):
+    query = (
+        select(SensorDataRaw)
+        .where(
+            SensorDataRaw.user_id == user_id,
+            SensorDataRaw.sensor_id == sensor_id
+        )
+        .order_by(SensorDataRaw.timestamp.asc())
+        .limit(limit)
+    )
+
+    result = await db.execute(query)
+    data_list = result.scalars().all()
+
+    if not data_list:
+        raise HTTPException(status_code=404, detail="Nenhum dado bruto encontrado")
+
+    return data_list

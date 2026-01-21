@@ -500,3 +500,89 @@
     max-height: 400px; /* máximo que o gráfico pode ocupar */
     object-fit: contain; /* mantém proporção sem distorcer */
 }
+
+input[type="datetime-local"] {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+    transition: all 0.2s;
+}
+
+input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: #1e88e5;
+    box-shadow: 0 0 4px rgba(30, 136, 229, 0.4);
+}
+
+#sensorFilter {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap; 
+}
+
+#sensorFilter label {
+    display: flex;
+    flex-direction: row; /* texto e input lado a lado */
+    align-items: center; /* centraliza verticalmente input + texto */
+    font-size: 12px;
+    gap: 6px; /* espaço entre texto e input */
+}
+
+#sensorFilter input[type="datetime-local"] {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+    transition: all 0.2s;
+    text-align: center;
+    height: 32px; /* altura fixa para igualar os botões */
+}
+
+#sensorFilter input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: #1e88e5;
+    box-shadow: 0 0 4px rgba(30, 136, 229, 0.4);
+}
+
+#sensorFilter button {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 32px; /* igual altura dos inputs */
+}
+
+#applyFilter {
+    background-color: #1e88e5;
+    color: white;
+}
+
+#applyFilter:hover {
+    background-color: #1565c0;
+}
+
+#clearFilter {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+#clearFilter:hover {
+    background-color: #bdbdbd;
+}
+
+#sensorFilter > label, 
+#sensorFilter > button {
+    display: flex;
+    justify-content: center;
+}

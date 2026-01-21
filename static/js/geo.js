@@ -145,16 +145,13 @@ async function loadSensorsOnMap() {
                 </div>
             `;
 
-            // Determinar qual ícone usar baseado no equipamento
             let iconUrl;
             if (sensor.equip && equipIcons[sensor.equip]) {
                 iconUrl = equipIcons[sensor.equip];
             } else {
-                // Ícone padrão caso não encontre o equipamento
                 iconUrl = "/static/img/motor_eletrico.png";
             }
 
-            // Criar elemento HTML personalizado para o marcador
             const el = document.createElement('div');
             el.className = 'custom-marker';
             el.style.cssText = `
@@ -163,7 +160,6 @@ async function loadSensorsOnMap() {
                 position: relative; /* importante */
             `;
 
-            // Cria o ícone dentro do wrapper
             const icon = document.createElement('div');
             icon.style.cssText = `
                 width: 32px;
@@ -180,7 +176,6 @@ async function loadSensorsOnMap() {
                 transition: transform 0.2s ease, box-shadow 0.2s ease;
             `;
 
-            // Adiciona efeito hover no ícone interno
             icon.addEventListener('mouseenter', () => {
                 icon.style.transform = 'scale(1.3)';
                 icon.style.boxShadow = '0 4px 12px rgba(0,0,0,0.35)';
@@ -190,10 +185,8 @@ async function loadSensorsOnMap() {
                 icon.style.boxShadow = '0 2px 5px rgba(0,0,0,0.25)';
             });
 
-            // Adiciona o ícone ao wrapper
             el.appendChild(icon);
 
-            // Cria o marcador Mapbox
             new mapboxgl.Marker(el)
                 .setLngLat([lng, lat])
                 .setPopup(
@@ -218,128 +211,3 @@ function updateMapStats(sensors) {
         new Date().toLocaleString();
 }
 
-/* Função placeholder para depois abrir gráfico / modal / rota */
-const sideModal = document.getElementById('sensorSideModal');
-
-let sensorCharts = {}; // guarda gráficos por sensor
-let sensorInterval = null; // intervalo para atualizar dados
-
-async function visualizarSensor(sensorId) {
-    const content = document.getElementById('sideModalContent');
-    content.innerHTML = `
-        <p>Carregando dados do sensor ${sensorId}...</p>
-        <canvas id="rmsChart" width="400" height="150"></canvas>
-        <canvas id="peakChart" width="400" height="150"></canvas>
-    `;
-    sideModal.style.display = 'flex';
-    sideModal.classList.remove('expanded');
-
-    // limpa intervalo anterior
-    if (sensorInterval) clearInterval(sensorInterval);
-
-    // inicia atualização
-    await loadSensorData(sensorId);
-
-    sensorInterval = setInterval(() => {
-        loadSensorData(sensorId);
-    }, 3000); // atualiza a cada 3s
-}
-
-function toggleExpandSideModal() {
-    const sideModal = document.getElementById('sensorSideModal');
-    sideModal.classList.toggle('expanded');
-
-    // Atualiza os gráficos para ocupar o novo tamanho
-    if (sensorCharts.rms) sensorCharts.rms.resize();
-    if (sensorCharts.peak) sensorCharts.peak.resize();
-}
-
-function closeSideModal() {
-    const sideModal = document.getElementById('sensorSideModal');
-    sideModal.style.display = 'none';
-    sideModal.classList.remove('expanded');
-    if (sensorInterval) clearInterval(sensorInterval);
-    sensorCharts = {};
-}
-
-async function loadSensorData(sensorId) {
-    try {
-        const userData = JSON.parse(localStorage.getItem('data'));
-        const response = await fetch(`/sensors/${userData.id}/${sensorId}/processed_data`);
-        const result = await response.json();
-        const data = result.data;
-
-        if (!data || data.length === 0) {
-            document.getElementById('sideModalContent').innerHTML = `<p>Nenhum dado disponível</p>`;
-            return;
-        }
-
-        // Preparar arrays de dados
-        const timestamps = data.map(d => new Date(d.timestamp).toLocaleTimeString());
-        const rms = data.map(d => d.rms);
-        const peak = data.map(d => d.peak);
-
-        // Criar ou atualizar gráfico RMS
-        if (!sensorCharts.rms) {
-            const ctx = document.getElementById('rmsChart').getContext('2d');
-            sensorCharts.rms = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: timestamps,
-                    datasets: [{
-                        label: 'RMS',
-                        data: rms,
-                        borderColor: '#2885F9',
-                        backgroundColor: 'rgba(40, 133, 249, 0.2)',
-                        tension: 0.2
-                    }]
-                },
-                options: {
-                    animation: false,
-                    responsive: true,
-                    scales: {
-                        x: { display: true },
-                        y: { display: true }
-                    }
-                }
-            });
-        } else {
-            sensorCharts.rms.data.labels = timestamps;
-            sensorCharts.rms.data.datasets[0].data = rms;
-            sensorCharts.rms.update();
-        }
-
-        // Criar ou atualizar gráfico Peak
-        if (!sensorCharts.peak) {
-            const ctx2 = document.getElementById('peakChart').getContext('2d');
-            sensorCharts.peak = new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: timestamps,
-                    datasets: [{
-                        label: 'Peak',
-                        data: peak,
-                        borderColor: '#E53935',
-                        backgroundColor: 'rgba(229, 57, 53, 0.2)',
-                        tension: 0.2
-                    }]
-                },
-                options: {
-                    animation: false,
-                    responsive: true,
-                    scales: {
-                        x: { display: true },
-                        y: { display: true }
-                    }
-                }
-            });
-        } else {
-            sensorCharts.peak.data.labels = timestamps;
-            sensorCharts.peak.data.datasets[0].data = peak;
-            sensorCharts.peak.update();
-        }
-
-    } catch (error) {
-        console.error('Erro ao carregar dados do sensor:', error);
-    }
-}

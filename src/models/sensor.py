@@ -86,3 +86,20 @@ class SensorCreate(BaseModel):
             host=host
         )
     
+
+class SensorDataRawSchema(BaseModel):
+    id: int
+    sensor_id: int
+    user_id: int
+    ax: float
+    ay: float
+    az: float
+    gx: Optional[float] = None
+    gy: Optional[float] = None
+    gz: Optional[float] = None
+    temp: Optional[float] = None
+    uptime_ms: Optional[int] = None
+    timestamp: datetime
+
+    class Config:
+        orm_mode = True

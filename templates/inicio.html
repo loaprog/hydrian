@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="../static/css/inicio.css">
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.css' rel='stylesheet'/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 <body>
     <header class="header">
@@ -47,18 +46,37 @@
 
                     <div id="map"></div>
 
+                    <!-- MODAL DO SENSOR COM FILTRO -->
                     <div class="side-modal" id="sensorSideModal">
                         <div class="side-modal-header">
-                        <h2>Dados do Sensor</h2>
-                        <div class="side-modal-buttons">
-                            <button class="expand-side-modal" onclick="toggleExpandSideModal()">⛶</button>
-                            <button class="close-side-modal" onclick="closeSideModal()">×</button>
-                        </div>  
+                            <h2>Dados do Sensor</h2>
+                            <div class="side-modal-buttons">
+                                <button class="expand-side-modal" onclick="toggleExpandSideModal()">⛶</button>
+                                <button class="close-side-modal" onclick="closeSideModal()">×</button>
+                            </div>  
                         </div>
+
                         <div class="side-modal-body" id="sideModalContent">
-                            Carregando dados...
+                            <!-- Filtro de intervalo -->
+                            <div id="sensorFilter" style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                                <label style="display:flex; flex-direction:column; font-size:12px;">
+                                    De:
+                                    <input type="datetime-local" id="filterStart" style="padding:4px; border-radius:4px; border:1px solid #ccc;">
+                                </label>
+                                <label style="display:flex; flex-direction:column; font-size:12px;">
+                                    Até:
+                                    <input type="datetime-local" id="filterEnd" style="padding:4px; border-radius:4px; border:1px solid #ccc;">
+                                </label>
+                                <button id="applyFilter" style="background:#1e88e5; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:bold;">Filtrar</button>
+                            </div>
+
+                            <!-- Gráficos -->
+                            <canvas id="rmsChart" width="400" height="150" style="background:#fafafa; border-radius:6px; padding:4px;"></canvas>
+                            <canvas id="peakChart" width="400" height="150" style="background:#fafafa; border-radius:6px; padding:4px;"></canvas>
                         </div>
                     </div>
+                    <!-- FIM DO MODAL SENSOR -->
+
                 </section>
             </div>
         </div>
@@ -74,6 +92,7 @@
         </button>
     </div>
 
+    <!-- MODAL DE CADASTRO DE SENSOR -->
     <div class="modal-overlay" id="sensorModal">
         <div class="modal">
             <div class="modal-header">
@@ -127,8 +146,17 @@
     </div>
 
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.js'></script>
+    <script>
+        // Pré-seleção de filtro das últimas 24h
+        const now = new Date();
+        const yesterday = new Date(now.getTime() - 24*60*60*1000);
+        document.getElementById('filterStart').value = yesterday.toISOString().slice(0,16);
+        document.getElementById('filterEnd').value = now.toISOString().slice(0,16);
+    </script>
+
     <script src="../static/js/inicio.js"></script>
     <script src="../static/js/sensor.js"></script>
+    <script src="../static/js/sensor-live.js"></script>
     <script src="../static/js/geo.js"></script>
 </body>
 </html>
