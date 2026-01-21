@@ -406,3 +406,89 @@
     }
 }
 
+/* Modal lateral dentro do mapa */
+.side-modal {
+    position: absolute;    /* Fica sobre o mapa */
+    top: 31.2%;
+    right: 1.5%;
+    height: 60%;
+    width: 35%;
+    background-color: #fff;
+    z-index: 10;           /* Sobre o mapa */
+    display: none;         /* Só aparece quando clicamos */
+    flex-direction: column;
+    overflow-y: auto;
+    font-family: Arial, sans-serif;
+    transition: right 0.3s ease;
+}
+
+.side-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background-color: #2885F9;
+    color: #fff;
+}
+
+.side-modal-body {
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.close-side-modal {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #fff;
+}
+
+.side-modal {
+    position: absolute;
+    top: 31.2%;
+    right: 1.5%;
+    height: 60%;
+    width: 35%;
+    background-color: #fff;
+    z-index: 10;
+    display: none;         /* Inicialmente escondido */
+    flex-direction: column;
+    overflow-y: auto;
+    font-family: Arial, sans-serif;
+    transition: width 0.3s ease, right 0.3s ease;
+}
+
+/* Estado expandido */
+.side-modal.expanded {
+    width: 97%;            /* Expande quase toda a tela */
+    right: 1.5%;           /* Mantém margem direita */
+}
+
+/* Header do modal */
+.side-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background-color: #2885F9;
+    color: #fff;
+    font-weight: bold;
+}
+
+.side-modal-header button {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #fff;
+    margin-left: 5px;
+}
+
+/* Corpo */
+.side-modal-body {
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+}

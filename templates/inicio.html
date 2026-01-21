@@ -7,118 +7,128 @@
     <link rel="icon" href="../static/img/favicon.png" type="image/png">
     <link rel="stylesheet" href="../static/css/inicio.css">
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.css' rel='stylesheet' />
-    
 </head>
 <body>
     <header class="header">
         <div class="logo-container">
             <img src="../static/img/hydrian_branco.png" alt="Hydrian" class="logo">
         </div>
-        
         <div class="user-info">
             <span class="user-name" id="userName">Usuário</span>
             <button class="logout-btn" id="logoutBtn">Sair</button>
         </div>
-    </header>        
+    </header>
+
     <main class="main-content">
         <div class="dashboard-grid">
             <div class="map-panel">
                 <section class="map-container">
-<div class="map-header">
-    <h3 class="map-title">Mapa de Dispositivos</h3>
-    <p class="map-subtitle">Clique nos marcadores para ver detalhes dos sensores</p>
+                    <!-- Cabeçalho do mapa -->
+                    <div class="map-header">
+                        <h3 class="map-title">Mapa de Dispositivos</h3>
+                        <p class="map-subtitle">Clique nos marcadores para ver detalhes dos sensores</p>
 
-    <div class="map-stats" id="mapStats">
-        <div class="stat-card">
-            <span class="stat-title">Dispositivos Ativos</span>
-            <span class="stat-value" id="activeDevices">0 (0%)</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-title">Média de Umidade</span>
-            <span class="stat-value" id="avgHumidity">0%</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-title">Última Atualização</span>
-            <span class="stat-value" id="lastUpdate">--</span>
-        </div>
-    </div>
-</div>
+                        <!-- MAP STATS: Mantidas -->
+                        <div class="map-stats" id="mapStats">
+                            <div class="stat-card">
+                                <span class="stat-title">Dispositivos Ativos</span>
+                                <span class="stat-value" id="activeDevices">0 (0%)</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-title">Média de Umidade</span>
+                                <span class="stat-value" id="avgHumidity">0%</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-title">Última Atualização</span>
+                                <span class="stat-value" id="lastUpdate">--</span>
+                            </div>
+                        </div>
+                    </div>
 
-            <div id="map"></div>
-        </section>
+                    <!-- MAPA -->
+                    <div id="map"></div>
+
+                    <!-- MODAL LATERAL DENTRO DO MAPA -->
+                    <div class="side-modal" id="sensorSideModal">
+                        <div class="side-modal-header">
+                        <h2>Dados do Sensor</h2>
+                        <div class="side-modal-buttons">
+                            <button class="expand-side-modal" onclick="toggleExpandSideModal()">⛶</button>
+                            <button class="close-side-modal" onclick="closeSideModal()">×</button>
+                        </div>  
+                        </div>
+                        <div class="side-modal-body" id="sideModalContent">
+                            Carregando dados...
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
     </main>
 
-<div class="map-actions">
-    <button class="open-modal-btn" onclick="openSensorModal()">
-        Adicionar Sensor
-    </button>
-
-    <button class="open-modal-btn" onclick="generateReport()">
-        Relatório
-    </button>
-</div>
-
-<div class="modal-overlay" id="sensorModal">
-    <div class="modal">
-        <div class="modal-header">
-            <h2>Cadastrar Novo Sensor</h2>
-            <button class="close-modal" onclick="closeSensorModal()">×</button>
-        </div>
-
-<form id="sensorForm" class="modal-body" enctype="multipart/form-data">
-
-    <div class="form-group">
-        <label for="deviceId">ID do Dispositivo</label>
-        <input type="text" id="deviceId" name="sensor_name" required>
-    </div>
-
-    <div class="form-row">
-        <div class="form-group">
-            <label for="latitude">Latitude</label>
-            <input type="number" id="latitude" name="latitude" step="any" required>
-        </div>
-
-        <div class="form-group">
-            <label for="longitude">Longitude</label>
-            <input type="number" id="longitude" name="longitude" step="any" required>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label for="equipmentType">Selecionar Equipamento</label>
-        <select id="equipmentType" name="equip" required>
-            <option value="">Selecione o equipamento</option>
-            <option value="motor_eletrico">Motor Elétrico</option>
-            <option value="bomba_centrifuga">Bomba Centrífuga</option>
-            <option value="conjunto_motobomba">Conjunto Moto-Bomba</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="host">Host / IP</label>
-        <input type="text" id="host" name="host" required>
-    </div>
-
-    <div class="form-group">
-        <label for="image">Imagem do Sensor</label>
-        <input type="file" id="image" name="image" accept="image/*">
-    </div>
-
-    <div class="modal-footer">
-        <button type="button" class="btn-cancel" onclick="closeSensorModal()">
-            Cancelar
+    <!-- Ações do mapa -->
+    <div class="map-actions">
+        <button class="open-modal-btn" onclick="openSensorModal()">
+            Adicionar Sensor
         </button>
-        <button type="submit" class="btn-save">
-            Salvar Sensor
+
+        <button class="open-modal-btn" onclick="generateReport()">
+            Relatório
         </button>
     </div>
-</form>
 
+    <!-- Modal para cadastro de sensor -->
+    <div class="modal-overlay" id="sensorModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Cadastrar Novo Sensor</h2>
+                <button class="close-modal" onclick="closeSensorModal()">×</button>
+            </div>
+
+            <form id="sensorForm" class="modal-body" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="deviceId">ID do Dispositivo</label>
+                    <input type="text" id="deviceId" name="sensor_name" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" id="latitude" name="latitude" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" id="longitude" name="longitude" step="any" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="equipmentType">Selecionar Equipamento</label>
+                    <select id="equipmentType" name="equip" required>
+                        <option value="">Selecione o equipamento</option>
+                        <option value="motor_eletrico">Motor Elétrico</option>
+                        <option value="bomba_centrifuga">Bomba Centrífuga</option>
+                        <option value="conjunto_motobomba">Conjunto Moto-Bomba</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="host">Host / IP</label>
+                    <input type="text" id="host" name="host" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Imagem do Sensor</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeSensorModal()">Cancelar</button>
+                    <button type="submit" class="btn-save">Salvar Sensor</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-
-
-
 
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.js'></script>
     <script src="../static/js/inicio.js"></script>

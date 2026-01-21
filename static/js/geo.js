@@ -219,9 +219,20 @@ function updateMapStats(sensors) {
 }
 
 /* Função placeholder para depois abrir gráfico / modal / rota */
+const sideModal = document.getElementById('sensorSideModal');
+
 function visualizarSensor(sensorId) {
-    console.log('Visualizar dados do sensor:', sensorId);
-    // Ex:
-    // window.location.href = `/sensor/${sensorId}`;
-    // ou abrir modal
+    const content = document.getElementById('sideModalContent');
+    content.innerHTML = `<p>Carregando dados do sensor ${sensorId}...</p>`;
+    sideModal.style.display = 'flex'; // mostra modal
+    sideModal.classList.remove('expanded'); // tamanho padrão
+}
+
+function closeSideModal() {
+    sideModal.style.display = 'none'; // esconde modal
+    sideModal.classList.remove('expanded'); // volta ao tamanho padrão
+}
+
+function toggleExpandSideModal() {
+    sideModal.classList.toggle('expanded'); // alterna entre expandido e normal
 }
