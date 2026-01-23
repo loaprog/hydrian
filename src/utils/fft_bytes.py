@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import io
 
@@ -14,3 +15,7 @@ def fft_to_json_safe(fft_arr):
         "imag": fft_arr.imag.tolist(),
         "magnitude": np.abs(fft_arr).tolist()
     }
+
+
+def rms(values):
+    return math.sqrt(sum(v * v for v in values) / len(values)) if values else None

@@ -34,10 +34,6 @@
                                 <span class="stat-value" id="activeDevices">0 (0%)</span>
                             </div>
                             <div class="stat-card">
-                                <span class="stat-title">Média de Umidade</span>
-                                <span class="stat-value" id="avgHumidity">0%</span>
-                            </div>
-                            <div class="stat-card">
                                 <span class="stat-title">Última Atualização</span>
                                 <span class="stat-value" id="lastUpdate">--</span>
                             </div>
@@ -46,7 +42,6 @@
 
                     <div id="map"></div>
 
-                    <!-- MODAL DO SENSOR COM FILTRO -->
                     <div class="side-modal" id="sensorSideModal">
                         <div class="side-modal-header">
                             <h2>Dados do Sensor</h2>
@@ -56,26 +51,54 @@
                             </div>  
                         </div>
 
-                        <div class="side-modal-body" id="sideModalContent">
-                            <!-- Filtro de intervalo -->
-                            <div id="sensorFilter" style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
-                                <label style="display:flex; flex-direction:column; font-size:12px;">
-                                    De:
-                                    <input type="datetime-local" id="filterStart" style="padding:4px; border-radius:4px; border:1px solid #ccc;">
-                                </label>
-                                <label style="display:flex; flex-direction:column; font-size:12px;">
-                                    Até:
-                                    <input type="datetime-local" id="filterEnd" style="padding:4px; border-radius:4px; border:1px solid #ccc;">
-                                </label>
-                                <button id="applyFilter" style="background:#1e88e5; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:bold;">Filtrar</button>
-                            </div>
+<div class="side-modal-body" id="sideModalContent">
+    <div id="sensorFilter" style="display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
+        <label style="display:flex; flex-direction:column; font-size:12px;">
+            De:
+            <input type="datetime-local" id="filterStart" style="padding:4px; border-radius:4px; border:1px solid #ccc;">
+        </label>
+        <label style="display:flex; flex-direction:column; font-size:12px;">
+            Até:
+            <input type="datetime-local" id="filterEnd" style="padding:4px; border-radius:4px; border:1px solid #ccc;">
+        </label>
+        <button id="applyFilter" style="background:#1e88e5; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:bold;">Filtrar</button>
+        <button id="clearFilter" style="background:#757575; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:bold;">Limpar</button>
+    </div>
 
-                            <!-- Gráficos -->
-                            <canvas id="rmsChart" width="400" height="150" style="background:#fafafa; border-radius:6px; padding:4px;"></canvas>
-                            <canvas id="peakChart" width="400" height="150" style="background:#fafafa; border-radius:6px; padding:4px;"></canvas>
-                        </div>
-                    </div>
-                    <!-- FIM DO MODAL SENSOR -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px;">
+        <div style="grid-column: span 2;">
+            <h4 style="margin: 4px 0; font-size: 14px;">Aceleração</h4>
+            <canvas id="accelChart" width="400" height="150"></canvas>
+        </div>
+        
+<!--             
+        <div>
+            <h4 style="margin: 4px 0; font-size: 14px;">RMS</h4>
+            <canvas id="rmsChart" width="400" height="150"></canvas>
+        </div>
+        
+        <div>
+            <h4 style="margin: 4px 0; font-size: 14px;">Peak</h4>
+            <canvas id="peakChart" width="400" height="150"></canvas>
+        </div>
+        
+        <div>
+            <h4 style="margin: 4px 0; font-size: 14px;">Crest Factor</h4>
+            <canvas id="crestChart" width="400" height="150"></canvas>
+        </div>
+-->       
+        <div>
+            <h4 style="margin: 4px 0; font-size: 14px;">Temperatura</h4>
+            <canvas id="tempChart" width="400" height="150"></canvas>
+        </div>
+
+        <div>
+            <h4 style="margin: 4px 0; font-size: 14px;">FFT (Eixo Z)</h4>
+            <canvas id="fftChart" width="400" height="150"></canvas>
+        </div>
+
+    </div>
+</div>
 
                 </section>
             </div>
@@ -92,7 +115,6 @@
         </button>
     </div>
 
-    <!-- MODAL DE CADASTRO DE SENSOR -->
     <div class="modal-overlay" id="sensorModal">
         <div class="modal">
             <div class="modal-header">
@@ -145,17 +167,17 @@
         </div>
     </div>
 
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.js'></script>
-    <script>
-        const now = new Date();
-        const yesterday = new Date(now.getTime() - 24*60*60*1000);
-        document.getElementById('filterStart').value = yesterday.toISOString().slice(0,16);
-        document.getElementById('filterEnd').value = now.toISOString().slice(0,16);
-    </script>
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.14.0/mapbox-gl.js'></script>
+<script>
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24*60*60*1000);
+    document.getElementById('filterStart').value = yesterday.toISOString().slice(0,16);
+    document.getElementById('filterEnd').value = now.toISOString().slice(0,16);
+</script>
 
-    <script src="../static/js/inicio.js"></script>
-    <script src="../static/js/sensor.js"></script>
-    <script src="../static/js/sensor-live.js"></script>
-    <script src="../static/js/geo.js"></script>
+<script src="../static/js/geo.js"></script>
+<script src="../static/js/sensor.js"></script>
+<script src="../static/js/sensor-live.js"></script>
+<script src="../static/js/inicio.js"></script>
 </body>
 </html>

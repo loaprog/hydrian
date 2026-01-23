@@ -20,8 +20,8 @@ logger = logging.getLogger("async_worker")
 engine = create_async_engine(DATABASE_URL, echo=False, future=True)
 AsyncSessionLocal = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
-BATCH_SIZE = 50      
-COLLECT_INTERVAL = 5   
+BATCH_SIZE = 3       #
+COLLECT_INTERVAL = 2  
 batch_lock = asyncio.Lock()  
 
 sensor_batches = {}  

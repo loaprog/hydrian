@@ -5,11 +5,13 @@ from database.db import get_db
 from models.sensor import Sensor, SensorCreate, SensorDataProcessed, SensorDataRaw, SensorDataRawSchema
 from datetime import datetime
 from fastapi.responses import Response
-from utils.fft_bytes import bytes_to_fft_array, fft_to_json_safe
+from utils.fft_bytes import bytes_to_fft_array, fft_to_json_safe, rms
 from database.db import get_async_db
 from sqlalchemy.ext.asyncio import AsyncSession
 import numpy as np
 from typing import Optional
+import math
+from collections import defaultdict
 
 sensor_router = APIRouter(prefix="/sensors", tags=["sensors"])
 
@@ -162,7 +164,18 @@ async def get_processed_data(
 
 
 @sensor_router.get("/{user_id}/{sensor_id}/raw_data")
-async def get_raw_data(user_id: int, sensor_id: int, limit: int = Query(100, description="Número máximo de registros retornados"), start: Optional[datetime] = Query(None, description="Data/hora inicial (ISO)"), end: Optional[datetime] = Query(None, description="Data/hora final (ISO)"), db: AsyncSession = Depends(get_async_db)):
+async def get_raw_data(
+    user_id: int,
+    sensor_id: int,
+    limit: int = Query(1000),
+    start: Optional[datetime] = Query(None),
+    end: Optional[datetime] = Query(None),
+    bucket_ms: Optional[int] = Query(
+        None,
+        description="Janela de agregação em ms (ex: 1000 = 1s)"
+    ),
+    db: AsyncSession = Depends(get_async_db)
+):
     query = (
         select(SensorDataRaw)
         .where(
@@ -170,7 +183,6 @@ async def get_raw_data(user_id: int, sensor_id: int, limit: int = Query(100, des
             SensorDataRaw.sensor_id == sensor_id
         )
         .order_by(SensorDataRaw.timestamp.asc())
-        .limit(limit)
     )
 
     if start:
@@ -178,10 +190,72 @@ async def get_raw_data(user_id: int, sensor_id: int, limit: int = Query(100, des
     if end:
         query = query.where(SensorDataRaw.timestamp <= end)
 
-    result = await db.execute(query)
-    data_list = result.scalars().all()
+    if not bucket_ms:
+        query = query.limit(limit)
 
-    if not data_list:
+    result = await db.execute(query)
+    rows = result.scalars().all()
+
+    if not rows:
         raise HTTPException(status_code=404, detail="Nenhum dado bruto encontrado")
 
-    return data_list
+    # SEM AGREGAÇÃO 
+    if not bucket_ms:
+        return [
+            {
+                "sensor_id": r.sensor_id,
+                "user_id": r.user_id,
+                "ax": r.ax,
+                "ay": r.ay,
+                "az": r.az,
+                "gx": r.gx,
+                "gy": r.gy,
+                "gz": r.gz,
+                "temp": r.temp,
+                "uptime_ms": r.uptime_ms,
+                "timestamp": r.timestamp.isoformat()
+            }
+            for r in rows
+        ]
+
+    # AGREGAÇÃO
+    buckets = defaultdict(list)
+
+    for r in rows:
+        ts_ms = int(r.timestamp.timestamp() * 1000)
+        key = ts_ms // bucket_ms
+        buckets[key].append(r)
+
+    aggregated = []
+
+    for _, group in buckets.items():
+        ax = [r.ax for r in group]
+        ay = [r.ay for r in group]
+        az = [r.az for r in group]
+        temp = [r.temp for r in group if r.temp is not None]
+
+        aggregated.append({
+            "timestamp": group[0].timestamp.isoformat(),
+
+            "ax_mean": sum(ax) / len(ax),
+            "ay_mean": sum(ay) / len(ay),
+            "az_mean": sum(az) / len(az),
+
+            "ax_min": min(ax),
+            "ax_max": max(ax),
+            "ay_min": min(ay),
+            "ay_max": max(ay),
+            "az_min": min(az),
+            "az_max": max(az),
+
+            "rms_az": rms(az),
+            "temp": sum(temp) / len(temp) if temp else None
+        })
+
+    return {
+        "sensor_id": sensor_id,
+        "user_id": user_id,
+        "bucket_ms": bucket_ms,
+        "records_count": len(aggregated),
+        "data": aggregated
+    }
