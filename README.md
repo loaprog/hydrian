@@ -1,6 +1,6 @@
 <img src="static/img/hydrian.png" alt="Logo" width="200"> 
 
-# 🧢  Monitoramento de Vibração para Motores de Irrigação 🧢 
+# Monitoramento de Vibração para Motores de Irrigação 🧢 
 
 <img src="static/img/projeto.png" alt="Sensor MPU6050 com ESP32" width="750">
 
