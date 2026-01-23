@@ -1,6 +1,6 @@
-<img src="static/img/hydrian.png" alt="Logo" width="200">
+<img src="static/img/hydrian.png" alt="Logo" width="200"> 
 
-# Monitoramento de Vibração para Motores de Irrigação
+# 🧢  Monitoramento de Vibração para Motores de Irrigação 🧢 
 
 <img src="static/img/projeto.png" alt="Sensor MPU6050 com ESP32" width="750">
 
@@ -35,9 +35,9 @@ O projeto foi pensado para aplicações como:
 A arquitetura do Hydrian é dividida em **4 camadas principais**:
 
 ```
-[Sensores] → [ESP32] → [API Backend] → [Banco de Dados]
-                                      ↓
-                                 [Frontend Web]
+[Sensores] → [ESP32] → [Worker] → [Banco de Dados]  → [Backend]
+                                                          ↓
+                                                    [Frontend Web]
 ```
 
 ### 1️⃣ Dispositivo (IoT)
@@ -72,14 +72,14 @@ O ESP32 realiza:
 
 ---
 
-## 🌐 Backend (API)
+## 🌐 Processameno
 
-O backend do Hydrian é responsável por:
+O backend e Worker do Hydrian é responsável por:
 
-* Receber dados dos sensores
-* Validar e autenticar dispositivos
-* Persistir informações no banco
-* Disponibilizar endpoints para o frontend
+* Receber dados dos sensores (Worker)
+* Validar e autenticar dispositivos (Backend)
+* Persistir informações no banco (Worker)
+* Disponibilizar endpoints para o frontend (Backend)
 
 ### Tecnologias
 
@@ -112,11 +112,14 @@ O backend do Hydrian é responsável por:
 
 O banco de dados é estruturado para manter **histórico completo** das medições.
 
+<img src="static/img/banco.png" alt="Sensor MPU6050 com ESP32" width="450">
+
 ### Principais tabelas
 
 * **users** – usuários do sistema
 * **sensors** – sensores cadastrados
-* **sensor_data** – dados coletados ao longo do tempo
+* **sensor_raw** – dados bruto coletados 
+* **sensor_processed** - dados processados (fft e ouros índices)
 
 Cada sensor está associado a:
 
@@ -131,9 +134,6 @@ Cada sensor está associado a:
 🚧 **Em desenvolvimento**
 
 Próximos passos:
-* Armazenar leituras dos sensores no banco de dados (atualmente apenas exibição em tempo real)
-* Dashboard com gráficos
-* Autenticação JWT
 * Alertas automáticos
 
 ---
@@ -145,6 +145,4 @@ Projeto Hydrian – IoT & Monitoramento
 
 ---
 
-## 📄 Licença
 
-Este projeto é de uso educacional e experimental.
