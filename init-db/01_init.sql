@@ -1,4 +1,3 @@
--- Criar schema
 CREATE SCHEMA IF NOT EXISTS hydrian;
 
 CREATE TABLE IF NOT EXISTS hydrian.users (
